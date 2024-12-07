@@ -9,7 +9,7 @@ Implement complex numbers in C++
 - Для удобства добавил `main.cpp` и прописал его запуск в `tasks.json`, чтобы вы могли потестить что-то своё. 
 
 # Как спиздить у меня проект :)?
-Клонируете мой реп себе в проект в VS code c помощью команды в терминал `git clone https://github.com/VadimDenisovich/ComplexNumber.git` \\ 
+Клонируете мой реп себе в проект в VS code c помощью команды в терминал `git clone https://github.com/VadimDenisovich/ComplexNumber.git` <br>
 Но лучше склонируйте и уберите всё, кроме папки `build`, `lib` и `СMakeList.txt`, а остальную реализацию напишите сами. Так полезнее. 
 
 # Если хотите сделать всё сами
