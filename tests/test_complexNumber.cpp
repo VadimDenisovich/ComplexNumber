@@ -32,7 +32,8 @@ TEST_CASE("Checking the class constructor for implicit conversion", "[constructo
     }
 };
 
-TEST_CASE("Testing methods", "[methods]") {
+// Проверяем методы abs(), arg(), factorization()
+TEST_CASE("Testing methods abs(), arg(), factorization()", "[methods]") {
     SECTION("abs() method") {
         ComplexNumber<int> c1(3, 4);
         REQUIRE(c1.abs() == Catch::Approx(5.0));
@@ -76,7 +77,8 @@ TEST_CASE("Testing methods", "[methods]") {
     }
 }
 
-TEST_CASE("Testing overloaded operators", "[operators]") {
+// Проверяем перегруженные операторы +, -, *, / и унарного минуса
+TEST_CASE("Testing overloaded operators +, -, *, / and unary minus", "[operators]") {
     SECTION("Addition operator") {
         ComplexNumber<int> c1(1, 2);
         ComplexNumber<int> c2(3, 4);
@@ -144,4 +146,63 @@ TEST_CASE("Testing overloaded operators", "[operators]") {
         REQUIRE(result2.getReal() == Catch::Approx(-1.5));
         REQUIRE(result2.getImaginary() == Catch::Approx(2.5));
     }
+}
+
+// Тестируем операторы +=, -=, *=, /=
+TEST_CASE("Testing operators +=, -=, *=, /=", "[operators]") {
+    SECTION("Operator +=") {
+        ComplexNumber<double> c1(1.0, 2.0);
+        ComplexNumber<double> c2(3.0, 4.0);
+        c1 += c2;
+        REQUIRE(c1.getReal() == Catch::Approx(4.0));
+        REQUIRE(c1.getImaginary() == Catch::Approx(6.0));
+    }
+
+    SECTION("Operator -=") {
+        ComplexNumber<double> c1(5.0, 6.0);
+        ComplexNumber<double> c2(1.0, 2.0);
+        c1 -= c2;
+        REQUIRE(c1.getReal() == Catch::Approx(4.0));
+        REQUIRE(c1.getImaginary() == Catch::Approx(4.0));
+    }
+
+    SECTION("Operator *=") {
+        ComplexNumber<double> c1(1.0, 2.0);
+        ComplexNumber<double> c2(3.0, 4.0);
+        c1 *= c2;
+        REQUIRE(c1.getReal() == Catch::Approx(-5.0));
+        REQUIRE(c1.getImaginary() == Catch::Approx(10.0));
+    }
+
+    SECTION("Operator /=") {
+        ComplexNumber<double> c1(1.0, 2.0);
+        ComplexNumber<double> c2(3.0, 4.0);
+        c1 /= c2;
+        REQUIRE(c1.getReal() == Catch::Approx(0.44).epsilon(0.01));
+        REQUIRE(c1.getImaginary() == Catch::Approx(0.08).epsilon(0.01));
+    }
+}
+
+// Тестируем операторы == и !=
+TEST_CASE("Testing comparison operators == and !=", "[operators]") {
+    SECTION("Operator ==") {
+        ComplexNumber<double> c1(1.0, 2.0);
+        ComplexNumber<double> c2(1.0, 2.0);
+        REQUIRE(c1 == c2);
+    }
+
+    SECTION("Operator !=") {
+        ComplexNumber<double> c1(1.0, 2.0);
+        ComplexNumber<double> c2(2.0, 3.0);
+        REQUIRE(c1 != c2);
+    }
+}
+
+// Проверяем, как работает оператор присваивания
+TEST_CASE("Testing assignment operator", "[assignment]") {
+    ComplexNumber<double> c1(1.0, 2.0);
+    ComplexNumber<double> c2;
+    c2 = c1;
+    REQUIRE(c2.getReal() == Catch::Approx(1.0));
+    REQUIRE(c2.getImaginary() == Catch::Approx(2.0));
 }

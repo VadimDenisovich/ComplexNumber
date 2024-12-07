@@ -6,16 +6,23 @@
 #include <variant>
 #include <string>
 
-// Проверяем тип данных. Если int, float, double, то возвращаем double
-// Если нет, то вызывается ошибка 
+// Переводим число из int, float, double в double, потому что класс у нас построен на double 
+// Когда мы пишем template вот так раздельно, а не template<typename T, typename V>, то это
+// позволяет отказаться от переписывания всей стуктуры когда, где 
+// ComlpexNumber<T> меняется везде на ComplexNumber<T, V>
+// а так мы вводим частный дженерик 
 template<typename T>
-double ComplexNumber<T>::toDouble(const T& value) {
-    return static_cast<double>(value); 
+template<typename V>
+double ComplexNumber<T>::toDouble(const V& value) {
+    if (std::is_same_v<V, int> || std::is_same_v<V, float> || std::is_same_v<V, double>){
+        return static_cast<double>(value);
+    } else {
+        throw std::invalid_argument("Unsupported type!");
+    }
 }
 
-
-template<typename T>
 // Конструктор класса со списком инициализации после :
+template<typename T>
 ComplexNumber<T>::ComplexNumber(T r, double i) : real(toDouble(r)), imaginary(i) {}
 
 // Геттер для действительной части
@@ -27,7 +34,7 @@ double ComplexNumber<T>::getReal()
 
 // Сеттер для действительной части
 template<typename T>
-void ComplexNumber<T>::setReal(T _real)
+void ComplexNumber<T>::setReal(auto _real)
 {
     real = toDouble(_real);
 }
@@ -39,8 +46,9 @@ double ComplexNumber<T>::getImaginary()
     return imaginary;
 }
 
+// Сеттер для мнимой части 
 template<typename T>
-void ComplexNumber<T>::setImaginary(T _imaginary)
+void ComplexNumber<T>::setImaginary(auto _imaginary)
 {
     imaginary = toDouble(_imaginary);
 }
@@ -102,7 +110,7 @@ void ComplexNumber<T>::operator+=(ComplexNumber &other)
 
 // Перегрузка оператора += для ариф. действий с int, float, double
 template<typename T>
-void ComplexNumber<T>::operator+=(T number)
+void ComplexNumber<T>::operator+=(auto number)
 {
     real += toDouble(number);
 }
@@ -117,7 +125,7 @@ void ComplexNumber<T>::operator-=(ComplexNumber &other)
 
 // Перегрузка оператора -= для ариф. действий с int, float, double
 template<typename T>
-void ComplexNumber<T>::operator-=(T number)
+void ComplexNumber<T>::operator-=(auto number)
 {
     real -= toDouble(number);
 }
@@ -132,12 +140,12 @@ void ComplexNumber<T>::operator*=(ComplexNumber &other)
     double b1 = imaginary;
     double b2 = other.imaginary;
     real = (a1 * a2) - (b1 * b2);
-    imaginary = (a1 * b2) - (b1 * a2);
+    imaginary = (a1 * b2) + (b1 * a2);
 }
 
 // Перегрузка оператора -= для ариф. действий с int, float, double
 template<typename T>
-void ComplexNumber<T>::operator*=(T number)
+void ComplexNumber<T>::operator*=(auto number)
 {
     // (a*c) + (b*c)i
     double a = real;
@@ -163,7 +171,7 @@ void ComplexNumber<T>::operator/=(ComplexNumber &other)
 
 // Перегрузка оператора /= для ариф. действий с int, float, double
 template<typename T>
-void ComplexNumber<T>::operator/=(T number)
+void ComplexNumber<T>::operator/=(auto number)
 {
     // (a/c) + (b/c)i
     double a = real;
@@ -195,10 +203,12 @@ std::ostream &operator<<(std::ostream &terminal, const ComplexNumber<T> &number)
 {
     if (number.imaginary >= 0)
     {
+        // Если мнимая часть положительна, то + 
         terminal << number.real << " + " << number.imaginary << "i";
     }
     else
     {
+        // Если мнимая часть отрицательна, то - 
         terminal << number.real << " - " << std::abs(number.imaginary) << "i";
     }
 
@@ -324,6 +334,7 @@ ComplexNumber<double> operator/(V number, ComplexNumber<T> &right)
     return ComplexNumber<double>(real, imaginary);
 }
 
+// Перегрузка оператора сравнения == 
 template<typename T>
 bool operator==(ComplexNumber<T> &left, ComplexNumber<T> &right)
 {
@@ -334,6 +345,7 @@ bool operator==(ComplexNumber<T> &left, ComplexNumber<T> &right)
     return (a1 == a2) && (b1 == b2);
 }
 
+// Перегрузка оператора сравнения != 
 template<typename T>
 bool operator!=(ComplexNumber<T> &left, ComplexNumber<T> &right)
 {

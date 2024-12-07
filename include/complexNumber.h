@@ -10,6 +10,7 @@
 template<typename T>
 class ComplexNumber {
     // Вызывает ошибку, если тип T не соответствует int, float, double 
+    // EX: СomplexNumber<char> вызовет ошибку
     static_assert(std::is_same_v<T, int> || std::is_same_v<T, float> || std::is_same_v<T, double>,
                   "Unsupported type for ComplexNumber");
 
@@ -20,26 +21,31 @@ private:
     double imaginary; 
 
 protected:
-    static double toDouble(const T& value);
+    template<typename V>
+    static double toDouble(const V& value);
 
 public:   
     ComplexNumber(T r = 0.0, double i = 0.0); 
     double getReal();
-    void setReal(T _real); 
+
+    // Чтобы работало auto нужно в tasks.json 
+    // в разделе args прописать `-std=c++20`
+    void setReal(auto _real); 
     double getImaginary(); 
-    void setImaginary(T _imaginary);
+    void setImaginary(auto _imaginary);
     double abs();
     double arg();
     void factorization(int degree = 1);
     ComplexNumber operator=(const ComplexNumber &other); 
     void operator+=(ComplexNumber &other);
-    void operator+=(T number);
+
+    void operator+=(auto number);
     void operator-=(ComplexNumber &other);
-    void operator-=(T number);
+    void operator-=(auto number);
     void operator*=(ComplexNumber &other);
-    void operator*=(T number);
+    void operator*=(auto number);
     void operator/=(ComplexNumber &other);
-    void operator/=(T number);
+    void operator/=(auto number);
     ComplexNumber operator-();
 
     // Дружественные функции 
@@ -49,6 +55,9 @@ public:
     template<typename U>
     friend ComplexNumber<double> operator+(ComplexNumber<U> &left, ComplexNumber<U> &right);
     
+    // Указываем два шаблона 
+    // typename U - для типа, с которым был инициализирован экземпляр класса 
+    // typename V - для типа, с каким 
     template<typename U, typename V>
     friend ComplexNumber<double> operator+(ComplexNumber<U> &left, V number);
     
@@ -89,8 +98,8 @@ public:
     friend bool operator!=(ComplexNumber<U> &left, ComplexNumber<U> &right);
 };
 
-// нужно экспортировать файл с реализацией
-// шаблонных методов и конструкторов, и дружественных функций
+// в конце нужно экспортировать файл с реализацией
+// шаблонных методов и конструкторов, и дружественных функций 
 #include "../src/complexNumber.tpp"
 
 #endif
