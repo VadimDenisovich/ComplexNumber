@@ -4,56 +4,65 @@
 #include "../include/complexNumber.h"
 #include <type_traits>
 #include <variant>
+#include <string>
 
-// Переводим из IntFloatDoubleType в double
-// (Разобраться детальнее, как работает функция!)
-double ComplexNumber::toDouble(const IntFloatDoubleType &real)
-{
-    return std::visit([](auto &&number) -> double
-                      { return (double)number; }, real);
+
+// Переводим число из int, float, double в double, потому что класс у нас построен на double 
+// Когда мы пишем template вот так раздельно, а не template<typename T, typename V>, то это
+// позволяет отказаться от переписывания всей стуктуры когда, где 
+// ComlpexNumber<T> меняется везде на ComplexNumber<T, V>
+// а так мы вводим частный дженерик 
+template<typename V>
+double ComplexNumber::toDouble(const V& value) {
+    if (std::is_same_v<V, int> || std::is_same_v<V, float> || std::is_same_v<V, double>){
+        return static_cast<double>(value);
+    } else {
+        throw std::invalid_argument("Unsupported type!");
+    }
 }
 
-// Специальный тип данных, позволяющий передавать на выбор <int, float, double>
-// на случай, если наше число задаётся
-using IntFloatDoubleType = std::variant<int, float, double>;
-
 // Конструктор класса со списком инициализации после :
-ComplexNumber::ComplexNumber(IntFloatDoubleType r, double i) : real(toDouble(r)), imaginary(i) {};
+ComplexNumber::ComplexNumber(Real r, Imag i) : real(r), imaginary(i) {}
 
 // Геттер для действительной части
-double ComplexNumber::getReal()
+double ComplexNumber::getReal() const   
 {
-    return real;
+    return real.value;
 }
 
 // Сеттер для действительной части
-void ComplexNumber::setReal(IntFloatDoubleType _real)
+void ComplexNumber::setReal(auto _real)
 {
-    real = toDouble(_real);
+  real.value = toDouble(_real);
 }
 
 // Геттер для мнимой части
-double ComplexNumber::getImaginary()
+double ComplexNumber::getImaginary() const 
 {
-    return imaginary;
+    return imaginary.value;
 }
 
-// Сеттер для мнимой части
-void ComplexNumber::setImaginary(IntFloatDoubleType _imaginary)
+// Сеттер для мнимой части 
+void ComplexNumber::setImaginary(auto _imaginary)
 {
-    imaginary = toDouble(_imaginary);
+    imaginary.value = toDouble(_imaginary);
 }
 
 // Находим модуль |C| = sqrt(a^2 + b^2)
 double ComplexNumber::abs()
 {
-    return sqrt(real * real + imaginary * imaginary);
+		double _real = real.value;
+		double _imaginary = imaginary.value;
+    return sqrt(_real * _real + _imaginary * _imaginary);
 }
+
 
 // Находим аргумент фи
 double ComplexNumber::arg()
 {
-    return atan(imaginary / real);
+		double _real = real.value;
+		double _imaginary = imaginary.value;
+    return atan(_imaginary / _real);
 }
 
 // Получаем на вход степень
@@ -66,9 +75,9 @@ void ComplexNumber::factorization(int degree)
     // получаем аргумент
     double arg = this->arg();
     // изменяем действительное число
-    real = r * cos(degree * arg);
+    real.value = r * cos(degree * arg);
     // изменяем мнимую часть
-    imaginary = r * sin(degree * arg);
+    imaginary.value = r * sin(degree * arg);
 }
 
 // Перегрузка оператора присваивания (копируем поля другого комп. числа)
@@ -89,81 +98,81 @@ ComplexNumber ComplexNumber::operator=(const ComplexNumber &other)
 // Перегрузка оператора += для ариф. действий с комплексными числами (др. классом)
 void ComplexNumber::operator+=(ComplexNumber &other)
 {
-    real += other.real;
-    imaginary += other.imaginary;
+    real.value += other.real.value;
+    imaginary.value += other.imaginary.value;
 }
 
 // Перегрузка оператора += для ариф. действий с int, float, double
-void ComplexNumber::operator+=(IntFloatDoubleType number)
+void ComplexNumber::operator+=(auto number)
 {
-    real += toDouble(number);
+    real.value += toDouble(number);
 }
 
 // Перегрузка оператора -= для ариф. действий с комплексными числами
 void ComplexNumber::operator-=(ComplexNumber &other)
 {
-    real -= other.real;
-    imaginary -= other.imaginary;
+    real.value -= other.real.value;
+    imaginary.value -= other.imaginary.value;
 }
 
 // Перегрузка оператора -= для ариф. действий с int, float, double
-void ComplexNumber::operator-=(IntFloatDoubleType number)
+void ComplexNumber::operator-=(auto number)
 {
-    real -= toDouble(number);
+    real.value -= toDouble(number);
 }
 
 // Перегрузка оператора *= для ариф. действий с комплексными числами
 void ComplexNumber::operator*=(ComplexNumber &other)
 {
     // Формула умножения (a1 * a2 - b1 * b2) + (a1 * b2 - b1 * a2)i
-    double a1 = real;
-    double a2 = other.real;
-    double b1 = imaginary;
-    double b2 = other.imaginary;
-    real = (a1 * a2) - (b1 * b2);
-    imaginary = (a1 * b2) - (b1 * a2);
+    double a1 = real.value;
+    double a2 = other.real.value;
+    double b1 = imaginary.value;
+    double b2 = other.imaginary.value;
+    real.value = (a1 * a2) - (b1 * b2);
+    imaginary.value = (a1 * b2) + (b1 * a2);
 }
 
 // Перегрузка оператора -= для ариф. действий с int, float, double
-void ComplexNumber::operator*=(IntFloatDoubleType number)
+void ComplexNumber::operator*=(auto number)
 {
     // (a*c) + (b*c)i
-    double a = real;
-    double b = imaginary;
+    double a = real.value;
+    double b = imaginary.value;
     double c = toDouble(number);
-    real = a * c;
-    imaginary = b * c;
+    real.value = a * c;
+    imaginary.value = b * c;
 }
 
 // Перегрузка оператора /= для ариф. действий с комплексными числами
 void ComplexNumber::operator/=(ComplexNumber &other)
 {
     // Формула ( (a1 * a2 + b1 * b2) + (b1 * a2 - a1 * b2)i ) / mod
-    double a1 = real;
-    double a2 = other.real;
-    double b1 = imaginary;
-    double b2 = other.imaginary;
+    double a1 = real.value;
+    double a2 = other.real.value;
+    double b1 = imaginary.value;
+    double b2 = other.imaginary.value;
     double mod = a2 * a2 + b2 * b2;
-    real = (a1 * a2 + b1 * b2) / mod;
-    imaginary = (b1 * a2 - a1 * b2) / mod;
+    real.value = (a1 * a2 + b1 * b2) / mod;
+    imaginary.value = (b1 * a2 - a1 * b2) / mod;
 }
 
 // Перегрузка оператора /= для ариф. действий с int, float, double
-void ComplexNumber::operator/=(IntFloatDoubleType number)
+void ComplexNumber::operator/=(auto number)
 {
     // (a/c) + (b/c)i
-    double a = real;
-    double b = imaginary;
+    double a = real.value;
+    double b = imaginary.value;
     double c = toDouble(number);
-    real = a / c;
-    imaginary = b / c;
+    real.value = a / c;
+    imaginary.value = b / c;
 }
 
 // Перегрузка унарного оператора - для смены знака
 ComplexNumber ComplexNumber::operator-()
 {
-    real = -real;
-    imaginary = -imaginary;
+    real.value = -real.value;
+    imaginary.value = -imaginary.value;
     return *this;
 }
 
@@ -177,13 +186,15 @@ ComplexNumber ComplexNumber::operator-()
 // std::ostream& terminal - ссылка на объект std::cout
 std::ostream &operator<<(std::ostream &terminal, const ComplexNumber &number)
 {
-    if (number.imaginary >= 0)
+    if (number.getImaginary() >= 0)
     {
-        terminal << number.real << " + " << number.imaginary << "i";
+        // Если мнимая часть положительна, то + 
+        terminal << number.getReal() << " + " << number.getImaginary() << "i";
     }
     else
     {
-        terminal << number.real << " - " << std::abs(number.imaginary) << "i";
+        // Если мнимая часть отрицательна, то - 
+        terminal << number.getReal() << " - " << std::abs(number.getImaginary()) << "i";
     }
 
     // Возвращает цепочку вывода в основную цепочку
@@ -193,122 +204,133 @@ std::ostream &operator<<(std::ostream &terminal, const ComplexNumber &number)
 // Перегрузка оператора + для комплексных чисел
 ComplexNumber operator+(ComplexNumber &left, ComplexNumber &right)
 {
-    return ComplexNumber(left.real + right.real, left.imaginary + right.imaginary);
+    return ComplexNumber(Real(left.getReal() + right.getReal()), Imag(left.getImaginary() + right.getImaginary()));
 }
 
 // Перегрузка оператора + для int, float, double (когда число слева)
-ComplexNumber operator+(ComplexNumber &left, IntFloatDoubleType number)
+template<typename V>
+ComplexNumber operator+(ComplexNumber &left, V number)
 {
     // Пишем ComplexNumber::toDouble(number), потому что перегрузка оператора +
     // является дружественной и она не может просто обратиться
     // к методу toDouble, нужно указать, что мы берём этот статический метод
     // у класса ComplexNumber
     double c = ComplexNumber::toDouble(number);
-    return ComplexNumber(left.real + c, left.imaginary);
+    return ComplexNumber(Real(left.getReal() + c), Imag(left.getImaginary()));
 }
 
 // Перегрузка оператора + для int, float, double (когда число справа)
-ComplexNumber operator+(IntFloatDoubleType number, ComplexNumber &right)
+template<typename V>
+ComplexNumber operator+(V number, ComplexNumber &right)
 {
     double c = ComplexNumber::toDouble(number);
-    return ComplexNumber(right.real + c, right.imaginary);
+    return ComplexNumber(Real(right.getReal() + c), Imag(right.getImaginary()));
 }
 
 // Перегрузка оператора - для комплексных чисел
 ComplexNumber operator-(ComplexNumber &left, ComplexNumber &right)
 {
-    return ComplexNumber(left.real - right.real, left.imaginary - right.imaginary);
+    return ComplexNumber(Real(left.getReal() - right.getReal()), Imag(left.getImaginary() - right.getImaginary()));
 }
 
 // Перегрузка оператора - для int, float, double (когда число слева)
-ComplexNumber operator-(ComplexNumber &left, IntFloatDoubleType number)
+template<typename V>
+ComplexNumber operator-(ComplexNumber &left, V number)
 {
     double c = ComplexNumber::toDouble(number);
-    return ComplexNumber(left.real - c, left.imaginary);
+    return ComplexNumber(Real(left.getReal - c), Imag(left.getImaginary));
 }
 
 // Перегрузка оператора - для int, float, double (когда число справа)
-ComplexNumber operator-(IntFloatDoubleType number, ComplexNumber &right)
+template<typename V>
+ComplexNumber operator-(V number, ComplexNumber &right)
 {
     double c = ComplexNumber::toDouble(number);
-    return ComplexNumber(c - right.real, right.imaginary);
+    return ComplexNumber(Real(c - right.getReal()), Imag(right.getImaginary()));
 }
 
 // Перегрузка оператора * для комплексных чисел
 ComplexNumber operator*(ComplexNumber &left, ComplexNumber &right)
 {
     // Формула умножения (a1 * a2 - b1 * b2) + (a1 * b2 - b1 * a2)i
-    double a1 = left.real;
-    double a2 = right.real;
-    double b1 = left.imaginary;
-    double b2 = right.imaginary;
-    double real = (a1 * a2) - (b1 * b2);
-    double imaginary = (a1 * b2) - (b1 * a2);
+    double a1 = left.getReal();
+    double a2 = right.getReal();
+    double b1 = left.getImaginary();
+    double b2 = right.getImaginary();
+    Real real = Real((a1 * a2) - (b1 * b2));
+    Imag imaginary = Imag((a1 * b2) + (b1 * a2));
     return ComplexNumber(real, imaginary);
 }
 
 // Перегрузка оператора * для int, float, double (когда число слева)
-ComplexNumber operator*(ComplexNumber &left, IntFloatDoubleType number)
+template<typename V>
+ComplexNumber operator*(ComplexNumber &left, V number)
 {
     double c = ComplexNumber::toDouble(number);
-    return ComplexNumber(left.real * c, left.imaginary * c);
+    return ComplexNumber(Real(left.getReal() * c), Imag(left.getImaginary() * c));
 }
 
 // Перегрузка оператора * для int, float, double (когда число справа)
-ComplexNumber operator*(IntFloatDoubleType number, ComplexNumber &right)
+template<typename V>
+ComplexNumber operator*(V number, ComplexNumber &right)
 {
     double c = ComplexNumber::toDouble(number);
-    return ComplexNumber(right.real * c, right.imaginary * c);
+    return ComplexNumber(Real(right.getReal() * c), Imag(right.getImaginary() * c));
 }
 
+// Перегрузка оператора / для комплексных чисел
 ComplexNumber operator/(ComplexNumber &left, ComplexNumber &right)
 {
     // Формула ( (a1 * a2 + b1 * b2) + (b1 * a2 - a1 * b2)i ) / mod
-    double a1 = left.real;
-    double b1 = left.imaginary;
-    double a2 = right.real;
-    double b2 = right.imaginary;
-    double mod = a2 * a2 + b2 * b2;
-    double real = (a1 * a2 + b1 * b2) / mod;
-    double imaginary = (b1 * a2 - a1 * b2) / mod;
+    double a1 = left.getReal();
+    double b1 = left.getImaginary();
+    double a2 = right.getReal();
+    double b2 = right.getImaginary();
+    double mod = (a2 * a2) + (b2 * b2); 
+    Real real = Real(((a1 * a2) + (b1 * b2)) / mod);   
+    Imag imaginary = Imag(((b1 * a2) - (a1 * b2)) / mod);
     return ComplexNumber(real, imaginary);
 }
 
 // Перегрузка оператора / для int, float, double (когда число слева)
-ComplexNumber operator/(ComplexNumber &left, IntFloatDoubleType number)
+template<typename V>
+ComplexNumber operator/(ComplexNumber &left, V number)
 {
     double c = ComplexNumber::toDouble(number);
-    return ComplexNumber(left.real / c, left.imaginary / c);
+    return ComplexNumber(Real(left.getReal() / c), Imag(left.getImaginary() / c));
 }
 
 // Перегрузка оператора / для int, float, double (когда число справа)
-ComplexNumber operator/(IntFloatDoubleType number, ComplexNumber &right)
+template<typename V>
+ComplexNumber operator/(V number, ComplexNumber &right)
 {
-    // формула, когда константа делится на комплексное: 
-    // (c*a / (a^2 + b^2)) - (c*b / (a^2 + b^2))i 
+    // формула, когда константа делится на комплексное:
+    // (c*a / (a^2 + b^2)) - (c*b / (a^2 + b^2))i
     double c = ComplexNumber::toDouble(number);
-    double a = right.real; 
-    double b = right.imaginary;
-    double denom = (a*a + b*b); // denominator - знаменатель
-    double real = (c * a) / denom; 
-    double imaginary = (c * b) / denom; 
+    double a = right.getReal();
+    double b = right.getImaginary();
+    double denom = (a * a + b * b); // denominator - знаменатель
+   	Real real = Real((c * a) / denom);
+  	Imag imaginary = Imag((c * b) / denom);
     return ComplexNumber(real, imaginary);
 }
 
+// Перегрузка оператора сравнения == 
 bool operator==(ComplexNumber &left, ComplexNumber &right)
 {
-    double a1 = left.real;
-    double b1 = left.imaginary;
-    double a2 = right.real;
-    double b2 = right.imaginary;
+    double a1 = left.getReal();
+    double b1 = left.getImaginary();
+    double a2 = right.getReal();
+    double b2 = right.getImaginary();
     return (a1 == a2) && (b1 == b2);
 }
 
+// Перегрузка оператора сравнения != 
 bool operator!=(ComplexNumber &left, ComplexNumber &right)
 {
-    double a1 = left.real;
-    double b1 = left.imaginary;
-    double a2 = right.real;
-    double b2 = right.imaginary;
+    double a1 = left.getReal();
+    double b1 = left.getImaginary();
+    double a2 = right.getReal();
+    double b2 = right.getImaginary();
     return (a1 != a2) || (b1 != b2);
 }
