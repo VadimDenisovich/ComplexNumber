@@ -9,7 +9,7 @@ set(CMAKE_PREFIX_PATH "${PROJECT_SOURCE_DIR}/lib/Catch2/src")
 # Поскольку я устанавливал Catch2 вручную с помощью git clone, то отыскиваем библиотеку по репозиторию. 
 find_package(Catch2 3 REQUIRED)
 
-add_executable(ComplexNumberTest include/complexNumber.h src/complexNumber.tpp tests/test_complexNumber.cpp)
+add_executable(ComplexNumberTest include/complexNumber.h src/complexNumber.cpp tests/test_complexNumber.cpp)
 target_include_directories(ComplexNumberTest PRIVATE
   "${PROJECT_SOURCE_DIR}/include"
 )
