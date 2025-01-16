@@ -66,6 +66,10 @@ RationalNumber::RationalNumber(long long _numerator, long long _denominator)
 	{
 		throw std::invalid_argument("Denominator cannot be zero");
 	}
+	else if (_denominator == 0 && _numerator == 0)
+	{
+		throw std::invalid_argument("0/0 = inf! That's not rational number.");
+	}
 	else
 	{
 		numerator = _numerator;

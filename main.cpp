@@ -5,12 +5,15 @@
 // Просто файл для проверки разных отдельных функций
 int main()
 {  
-		double max_double = std::numeric_limits<double>::max();
-		std::cout << max_double << std::endl;
-    double big_number1 = max_double / 2;
-		std::cout << big_number1 << std::endl;
-    double big_number2 = max_double / 3;
-		RationalNumber r1(big_number1);
-		std::cout << r1 << std::endl;
+		RationalNumber a2(0.0);
+		RationalNumber b2(0.0);
+		RationalNumber a1(9223372036854775400.3482338);
+		RationalNumber b1(1);
+		RationalNumber mod = (a2 * a2) + (b2 * b2); 
+		std::cout << mod << std::endl;
+    RationalNumber real = (((a1 * a2) + (b1 * b2)) / mod);   
+		std::cout << real << std::endl;
+   	RationalNumber imaginary = (((b1 * a2) - (a1 * b2)) / mod);
+		std::cout << imaginary << std::endl;
     return 0; 
 }

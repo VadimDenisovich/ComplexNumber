@@ -205,7 +205,7 @@ TEST_CASE("Testing comparison operators == and !=", "[operators]") {
 // Проверяем, как работает оператор присваивания
 TEST_CASE("Testing assignment operator", "[assignment]") {
     ComplexNumber c1(Real(1.0), Imag(2.0));
-    ComplexNumber c2(Real(0), Imag(0));
+    ComplexNumber c2(Real(0), Imag(1));
     c2 = c1;
     REQUIRE(c2.getReal().toDouble() == Catch::Approx(1.0));
     REQUIRE(c2.getImaginary().toDouble() == Catch::Approx(2.0));
@@ -235,6 +235,15 @@ TEST_CASE("Testing very big number", "[operators]") {
 
     // Проверяем, что числа не изменились после вычислений
     REQUIRE(c6.getReal().toDouble() == Catch::Approx(1.08333333333394344));
-    REQUIRE(c6.getImaginary().toDouble() == Catch::Approx(-0.0));
-	
+    REQUIRE(c6.getImaginary().toDouble() == Catch::Approx(-0.0));	
+}
+
+TEST_CASE("Dividing big number by zero", "[big_numbers_zero_div]") {
+    // Создаем комплексное число с очень большими значениями
+    ComplexNumber c1(Real(9223372036854775400.3482338), Imag(1));
+    // Создаем комплексное число, равное нулю
+    ComplexNumber c2(Real(0.0), Imag(0.0));
+
+    // Проверяем, что при делении на ноль выбрасывается исключение
+    REQUIRE_THROWS_AS(c1 / c2, std::invalid_argument);
 }

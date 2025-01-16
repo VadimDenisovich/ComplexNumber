@@ -42,14 +42,13 @@ public:
 		{
 			if (value == 0) 
 			{
-				return RationalNumber(0, 0);
+				return RationalNumber(0, 1); 
 			}
 			return RationalNumber(value, 1);
 		}
 		else if constexpr (std::is_same_v<V, double>)
 		{
 			int factor = pow(10, _countDecimalPlaces(value));
-			std::cout << "tutochki" << factor << std::endl;
 			long long _denominator = factor;
 			long long _numerator = value * factor;
 			return RationalNumber(_numerator, _denominator);
